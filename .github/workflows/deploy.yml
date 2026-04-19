@@ -1,0 +1,103 @@
+name: Deploy to Vercel
+
+on:
+  # Deploy production from main and preview deployments from feature branches.
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: vercel-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: CI checks before deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      # Fetch the repository contents for the workflow runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Use the same Node.js version as the deployment job.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Install dependencies from package-lock.json for reproducible checks.
+      - name: Install dependencies
+        run: npm install
+
+      # Stop deployment early if linting fails.
+      - name: Run lint
+        run: npm run lint
+
+      # Stop deployment early if TypeScript validation fails.
+      - name: Run typecheck
+        run: npm run typecheck
+
+      # Stop deployment early if the Next.js production build fails.
+      - name: Build application
+        run: npm run build
+
+  deploy:
+    name: Vercel deployment
+    runs-on: ubuntu-latest
+    needs: quality-gate
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      # Fetch the current branch so Vercel can associate the deploy with this commit.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Use Node.js 20 for compatibility with Next.js 15 and the Vercel CLI.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Install project dependencies before building with Vercel.
+      - name: Install dependencies
+        run: npm install
+
+      # Install the Vercel CLI used to pull project config, build, and deploy.
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Pull Vercel project settings and preview environment variables into .vercel/.
+      - name: Pull Vercel preview environment
+        if: github.ref != 'refs/heads/main'
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Pull production environment variables only for the production branch.
+      - name: Pull Vercel production environment
+        if: github.ref == 'refs/heads/main'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Build once with Vercel so the exact prebuilt output is deployed.
+      - name: Build preview with Vercel
+        if: github.ref != 'refs/heads/main'
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Production builds must use production environment variables.
+      - name: Build production with Vercel
+        if: github.ref == 'refs/heads/main'
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Feature branches deploy as preview deployments with unique preview URLs.
+      - name: Deploy preview
+        if: github.ref != 'refs/heads/main'
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+      # The main branch deploys to the production Vercel environment.
+      - name: Deploy production
+        if: github.ref == 'refs/heads/main'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

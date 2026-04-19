@@ -60,6 +60,40 @@ The API route uses:
 
 If the key is absent in Vercel, the deployed app will use mock data.
 
+## CI/CD Setup
+
+This project includes two GitHub Actions workflows:
+
+- `.github/workflows/ci.yml` runs on pushes to `main` and on every pull request. It checks out the repo, sets up Node.js 20, installs dependencies, then runs lint, typecheck, and production build checks.
+- `.github/workflows/deploy.yml` runs on every push. Pushes to feature branches create Vercel preview deployments, while pushes to `main` deploy to production.
+
+Preview deployments produce unique Vercel preview URLs for each branch/commit. Production deployments are reserved for the `main` branch.
+
+For strict release control, configure GitHub branch protection so `main` requires the CI workflow to pass before merging pull requests.
+
+## Vercel Setup
+
+1. Connect the GitHub repository to Vercel.
+2. Add the application environment variable in Vercel:
+
+```bash
+GOOGLE_MAPS_API_KEY=your_key_here
+```
+
+3. Add these GitHub repository secrets for GitHub Actions deployment:
+
+```bash
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_vercel_org_id
+VERCEL_PROJECT_ID=your_vercel_project_id
+```
+
+`VERCEL_TOKEN` can be created from Vercel Account Settings. `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` are available in `.vercel/project.json` after running `vercel link`, or from the Vercel project settings.
+
+The deployment workflow pulls the matching Vercel environment configuration, builds with `vercel build`, and deploys the prebuilt output. On `main`, it uses production environment config plus `vercel deploy --prebuilt --prod`; on other branches, it uses preview environment config plus `vercel deploy --prebuilt`.
+
+If Vercel Git auto-deployments are also enabled, Vercel may deploy the same push twice. Use either Vercel's built-in Git integration or this GitHub Actions workflow as the deployment source of truth.
+
 ## Scripts
 
 ```bash

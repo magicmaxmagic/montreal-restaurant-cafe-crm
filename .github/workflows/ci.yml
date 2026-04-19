@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  # Validate every change that lands on the production branch.
+  push:
+    branches:
+      - main
+  # Validate pull requests from any branch before they can be merged.
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, typecheck, and build
+    runs-on: ubuntu-latest
+
+    steps:
+      # Fetch the repository contents for the workflow runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Use the same major Node.js version locally and in CI for predictable builds.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Install dependencies from package-lock.json for reproducible CI runs.
+      - name: Install dependencies
+        run: npm install
+
+      # Enforce code quality and Next.js lint rules before deployment.
+      - name: Run lint
+        run: npm run lint
+
+      # Ensure TypeScript types are valid across the app.
+      - name: Run typecheck
+        run: npm run typecheck
+
+      # Build the production bundle to catch App Router and runtime issues.
+      - name: Build application
+        run: npm run build
