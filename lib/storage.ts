@@ -1,13 +1,6 @@
-import type { BusinessLead, LeadStatus } from "@/types/business";
+import type { BusinessLead, LeadOverride, LeadOverrides } from "@/types/business";
 
 const STORAGE_KEY = "montreal-crm-lead-overrides-v1";
-
-type LeadOverride = {
-  notes?: string;
-  leadStatus?: LeadStatus;
-};
-
-type LeadOverrides = Record<string, LeadOverride>;
 
 export function loadLeadOverrides(): LeadOverrides {
   if (typeof window === "undefined") return {};
@@ -28,6 +21,8 @@ export function applyLeadOverrides(businesses: BusinessLead[], overrides: LeadOv
   return businesses.map((business) => ({
     ...business,
     notes: overrides[business.id]?.notes ?? business.notes,
+    emailed: overrides[business.id]?.emailed ?? business.emailed,
+    visited: overrides[business.id]?.visited ?? business.visited,
     leadStatus: overrides[business.id]?.leadStatus ?? business.leadStatus
   }));
 }

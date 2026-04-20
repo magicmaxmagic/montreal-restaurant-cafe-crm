@@ -68,19 +68,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Install the Vercel CLI used to pull project config, build, and deploy.
+      # Install the Vercel CLI used to pull project config, sync env, build, and deploy.
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm i -g vercel
 
-      # Pull Vercel project settings and preview environment variables into .vercel/.
-      - name: Pull Vercel preview environment
+      # Pull Vercel project settings for preview deployments.
+      - name: Pull Vercel preview project config
         if: github.ref != 'refs/heads/main'
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      # Pull production environment variables only for the production branch.
-      - name: Pull Vercel production environment
+      # Pull Vercel project settings for production deployments.
+      - name: Pull Vercel production project config
         if: github.ref == 'refs/heads/main'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Export Vercel environment variables to .env for tools that read env files.
+      - name: Pull preview environment variables
+        if: github.ref != 'refs/heads/main'
+        run: vercel env pull .env --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Export production environment variables to .env only on main.
+      - name: Pull production environment variables
+        if: github.ref == 'refs/heads/main'
+        run: vercel env pull .env --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       # Build once with Vercel so the exact prebuilt output is deployed.
       - name: Build preview with Vercel

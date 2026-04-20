@@ -43,3 +43,64 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #0f172a;
+  color: #0f172a;
+  font: inherit;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.82) !important;
+  color: #cbd5e1 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #38bdf8 !important;
+}
+
+.lead-map-marker {
+  display: block;
+  height: 18px;
+  width: 18px;
+  border: 2px solid #e0f2fe;
+  border-radius: 999px;
+  background: #38bdf8;
+  box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.22), 0 10px 24px rgba(2, 8, 23, 0.45);
+}
+
+.lead-map-marker-email {
+  border-color: #dcfce7;
+  background: #34d399;
+  box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.24), 0 10px 24px rgba(2, 8, 23, 0.45);
+}
+
+.lead-map-popup {
+  display: grid;
+  gap: 5px;
+  min-width: 210px;
+  color: #0f172a;
+}
+
+.lead-map-popup strong {
+  font-size: 14px;
+}
+
+.lead-map-popup span {
+  color: #475569;
+  font-size: 12px;
+}
+
+.lead-map-popup button {
+  margin-top: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: #0284c7;
+  color: white;
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}

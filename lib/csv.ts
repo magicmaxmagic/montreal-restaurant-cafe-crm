@@ -9,18 +9,22 @@ const headers: Array<keyof BusinessLead> = [
   "phone",
   "website",
   "openingHours",
-  "rating",
-  "googleMapsUrl",
-  "businessStatus",
   "email",
+  "emailSource",
+  "emailEnrichmentCheckedAt",
+  "latitude",
+  "longitude",
+  "osmUrl",
   "notes",
+  "emailed",
+  "visited",
   "leadStatus",
   "source",
   "createdAt"
 ];
 
 function escapeCsvValue(value: unknown): string {
-  const normalized = Array.isArray(value) ? value.join(" | ") : value ?? "";
+  const normalized = value ?? "";
   const text = String(normalized);
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }

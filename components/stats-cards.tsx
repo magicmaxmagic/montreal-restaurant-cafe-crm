@@ -6,18 +6,16 @@ type StatsCardsProps = {
 };
 
 export function StatsCards({ businesses }: StatsCardsProps) {
-  const contacted = businesses.filter((business) => business.leadStatus !== "new").length;
-  const qualified = businesses.filter((business) => business.leadStatus === "qualified").length;
+  const emailed = businesses.filter((business) => business.emailed).length;
+  const visited = businesses.filter((business) => business.visited).length;
   const websites = businesses.filter((business) => business.website).length;
-  const avgRating =
-    businesses.reduce((sum, business) => sum + (business.rating ?? 0), 0) /
-    Math.max(1, businesses.filter((business) => business.rating !== null).length);
+  const emails = businesses.filter((business) => business.email).length;
 
   const stats = [
-    { label: "Total leads", value: businesses.length.toString(), helper: "Deduplicated businesses" },
-    { label: "Touched leads", value: contacted.toString(), helper: "Contacted or beyond" },
-    { label: "Qualified", value: qualified.toString(), helper: "Ready for pipeline" },
-    { label: "Avg rating", value: avgRating ? avgRating.toFixed(1) : "—", helper: `${websites} with websites` }
+    { label: "Total leads", value: businesses.length.toString(), helper: "Montreal businesses" },
+    { label: "Emails sent", value: emailed.toString(), helper: "Marked as emailed" },
+    { label: "Visited", value: visited.toString(), helper: "Marked as visited" },
+    { label: "Contact data", value: `${emails}/${websites}`, helper: "Emails / websites" }
   ];
 
   return (

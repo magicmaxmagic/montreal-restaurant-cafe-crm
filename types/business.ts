@@ -1,6 +1,13 @@
 export type LeadStatus = "new" | "contacted" | "qualified" | "closed";
 
-export type BusinessStatus = "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY" | string;
+export type LeadOverride = {
+  notes?: string;
+  emailed?: boolean;
+  visited?: boolean;
+  leadStatus?: LeadStatus;
+};
+
+export type LeadOverrides = Record<string, LeadOverride>;
 
 export interface BusinessLead {
   id: string;
@@ -10,21 +17,26 @@ export interface BusinessLead {
   borough: string;
   phone: string | null;
   website: string | null;
-  openingHours: string[];
-  rating: number | null;
-  googleMapsUrl: string | null;
-  businessStatus: BusinessStatus | null;
+  openingHours: string | null;
   email: string | null;
+  emailSource: "osm" | "website" | null;
+  emailEnrichmentCheckedAt?: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  osmUrl: string;
   notes: string;
+  emailed: boolean;
+  visited: boolean;
   leadStatus: LeadStatus;
-  source: "Google Places" | "Mock Data";
+  source: "OpenStreetMap";
   createdAt: string;
 }
 
 export interface BusinessResponse {
   businesses: BusinessLead[];
   lastSynced: string;
-  source: "google_places" | "mock";
+  source: "postgres" | "json" | "osm" | "mock";
+  total?: number;
   warning?: string;
 }
 

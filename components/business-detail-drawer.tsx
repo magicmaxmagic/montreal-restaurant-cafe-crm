@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 type BusinessDetailDrawerProps = {
   business: BusinessLead | null;
   onClose: () => void;
+  onEmailedChange: (id: string, emailed: boolean) => void;
+  onVisitedChange: (id: string, visited: boolean) => void;
   onLeadStatusChange: (id: string, leadStatus: LeadStatus) => void;
   onNotesChange: (id: string, notes: string) => void;
 };
@@ -12,6 +14,8 @@ type BusinessDetailDrawerProps = {
 export function BusinessDetailDrawer({
   business,
   onClose,
+  onEmailedChange,
+  onVisitedChange,
   onLeadStatusChange,
   onNotesChange
 }: BusinessDetailDrawerProps) {
@@ -24,7 +28,7 @@ export function BusinessDetailDrawer({
           <div>
             <Badge>{business.category}</Badge>
             <h2 className="mt-4 text-2xl font-semibold text-white">{business.name}</h2>
-            <p className="mt-2 text-sm text-slate-400">{business.address}</p>
+            <p className="mt-2 text-sm text-slate-400">{business.address || "Not available"}</p>
           </div>
           <Button onClick={onClose} aria-label="Close details">
             Close
@@ -33,7 +37,21 @@ export function BusinessDetailDrawer({
 
         <div className="mt-8 grid gap-4 text-sm">
           <Detail label="Borough" value={business.borough} />
-          <Detail label="Phone" value={business.phone ?? "—"} />
+          <Detail label="Address" value={business.address || "Not available"} />
+          <Detail label="Phone" value={business.phone ?? "Not available"} />
+          <Detail
+            label="Email"
+            value={
+              business.email ? (
+                <a className="text-accent-400 hover:underline" href={`mailto:${business.email}`}>
+                  {business.email}
+                </a>
+              ) : (
+                "Not available"
+              )
+            }
+          />
+          <Detail label="Email source" value={business.emailSource ?? "Not available"} />
           <Detail
             label="Website"
             value={
@@ -42,25 +60,20 @@ export function BusinessDetailDrawer({
                   {business.website}
                 </a>
               ) : (
-                "—"
+                "Not available"
               )
             }
           />
+          <Detail label="Mail sent" value={business.emailed ? "Yes" : "No"} />
+          <Detail label="Visited" value={business.visited ? "Yes" : "No"} />
           <Detail
-            label="Google Maps"
+            label="Coordinates"
             value={
-              business.googleMapsUrl ? (
-                <a className="text-accent-400 hover:underline" href={business.googleMapsUrl} target="_blank" rel="noreferrer">
-                  Open listing
-                </a>
-              ) : (
-                "—"
-              )
+              business.latitude !== null && business.longitude !== null
+                ? `${business.latitude.toFixed(5)}, ${business.longitude.toFixed(5)}`
+                : "Not available"
             }
           />
-          <Detail label="Rating" value={business.rating?.toString() ?? "—"} />
-          <Detail label="Business status" value={business.businessStatus ?? "—"} />
-          <Detail label="Email" value={business.email ?? "Not available from Google Places"} />
           <Detail label="Source" value={business.source} />
           <Detail label="Created" value={new Date(business.createdAt).toLocaleString()} />
         </div>
@@ -68,19 +81,31 @@ export function BusinessDetailDrawer({
         <div className="mt-8">
           <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Opening hours</h3>
           <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
-            {business.openingHours.length ? (
-              <ul className="space-y-1">
-                {business.openingHours.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            ) : (
-              "No hours available."
-            )}
+            {business.openingHours ?? "Not available"}
           </div>
         </div>
 
         <div className="mt-8 grid gap-4">
+          <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300 sm:grid-cols-2">
+            <label className="inline-flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={business.emailed}
+                onChange={(event) => onEmailedChange(business.id, event.target.checked)}
+                className="h-4 w-4 accent-accent-500"
+              />
+              Mail sent
+            </label>
+            <label className="inline-flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={business.visited}
+                onChange={(event) => onVisitedChange(business.id, event.target.checked)}
+                className="h-4 w-4 accent-accent-500"
+              />
+              Visited
+            </label>
+          </div>
           <label className="grid gap-2 text-sm font-medium text-slate-300">
             Lead status
             <Select
